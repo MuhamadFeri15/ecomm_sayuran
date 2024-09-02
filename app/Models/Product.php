@@ -15,7 +15,8 @@ class Product extends Model
         'product_name',
         'weight_product',
         'price',
-        'stock'
+        'stock',
+        'image'
     ];
 
 
@@ -23,6 +24,20 @@ class Product extends Model
     {
         return $this->belongsTo(Categories::class, 'category_id');
     }
+
+    public function orderItem() {
+        return $this->hasMany(OrderItem::class);
+    }
+
+    public function cart() {
+        return $this->hasMany(Cart::class);
+    }
+
+    public function favourite() {
+        return $this->hasMany(Favourite::class);
+    }
+
+
 
 
     protected $casts = [

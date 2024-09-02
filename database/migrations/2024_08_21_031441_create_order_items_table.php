@@ -18,7 +18,6 @@ return new class extends Migration
             $table->Integer("quantity");
             $table->Integer("price");
             $table->integer("total");
-            $table->softDeletes();
             $table->timestamps();
         });
     }

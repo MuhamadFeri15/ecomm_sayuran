@@ -4,6 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\ProductStock;
 use Illuminate\Http\Request;
+use App\Models\Product;
+use Illuminate\Support\Facades\Auth;
+use Inertia\Inertia;
+
 
 class ProductStockController extends Controller
 {
@@ -12,7 +16,10 @@ class ProductStockController extends Controller
      */
     public function index()
     {
-        //
+        $productStocks = ProductStock::with('product')->get(); // Mengambil semua stok produk dan memuat data produk terkait
+        return Inertia::render('ProductStock/Index', [
+            'productStocks' => $productStocks
+        ]);
     }
 
     /**
@@ -42,17 +49,37 @@ class ProductStockController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(ProductStock $productStock)
+    public function edit(ProductStock $productStock, $id)
     {
-        //
+        $productStock = ProductStock::with('product')->findOrFail($id); // Mengambil stok produk berdasarkan ID dan memuat data produk terkait
+        return Inertia::render('ProductStock/Edit', [
+            'productStock' => $productStock
+        ]);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, ProductStock $productStock)
-    {
-        //
+    public function update(Request $request, $id)
+    { $productStock = ProductStock::findOrFail($id); // Mengambil stok produk berdasarkan ID atau gagal jika tidak ditemukan
+
+        // Validasi data yang diinput oleh pengguna
+        $request->validate([
+            'total_available' => 'required|integer|min:0',
+            'total_defect' => 'required|integer|min:0',
+        ]);
+
+        // Memperbarui stok produk dengan data yang baru
+        $productStock->update([
+            'total_available' => $request->input('total_available'),
+            'total_defect' => $request->input('total_defect'),
+        ]);
+
+        // Mengarahkan kembali ke halaman indeks dengan pesan sukses
+        return Inertia::render('ProductStocks/Index', [
+            'success' => 'Product stock updated successfully.',
+            'productStocks' => ProductStock::all() // Menyediakan data terbaru
+        ]);
     }
 
     /**

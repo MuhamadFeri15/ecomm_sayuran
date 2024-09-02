@@ -11,8 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('categories', function (Blueprint $table) {
-            $table->dropColumn('product_id');
+        Schema::create('favourites', function (Blueprint $table) {
+            $table->id();
+            $table->bigInteger('profile_id');
+            $table->bigInteger('product_id');
+            $table->timestamp('deleted_at')->nullable();
+            $table->timestamps();
         });
     }
 
@@ -21,8 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('categories', function (Blueprint $table) {
-            $table->bigInteger('product_id')->after('id');
-        });
+        Schema::dropIfExists('favourites');
     }
 };

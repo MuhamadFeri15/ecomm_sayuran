@@ -2,62 +2,151 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\ProfileUpdateRequest;
-use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Illuminate\Http\RedirectResponse;
+use App\Models\Login;
+use App\Models\Profile;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Redirect;
+use App\Http\Requests\Auth\LoginRequest;
+use App\Http\Requests\Auth\RegisterRequest;
+use App\Http\Requests\ProfileUpdateRequest;
 use Inertia\Inertia;
-use Inertia\Response;
+
 
 class ProfileController extends Controller
 {
-    /**
-     * Display the user's profile form.
-     */
-    public function edit(Request $request): Response
+
+    public function index()
     {
-        return Inertia::render('Profile/Edit', [
-            'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
-            'status' => session('status'),
+        $user = Auth::user();
+
+        return Inertia::render('Profile/Index', [
+            'user' => $user,
+        ]);
+        
+    }
+
+
+    public function create()
+    {
+
+    }
+
+
+    public function store(Request $request)
+    {
+
+    }
+
+
+    public function show(Profile $profile, $id)
+    {
+        $data = Profile::where('id', $id)->firstOrFail();
+
+        return Inertia::render('Profile/Show', [
+            'data' => $data,
+        ]);
+    }
+
+
+    public function edit($id)
+    {
+        $user = Auth::user();
+
+
+        return Inertia::render('Profile/EditProfile', [
+            'user' => $user,
+        ]);
+    }
+
+    public function editPassword() {
+        return Inertia::render('Profile/EditPassword');
+    }
+
+
+    public function update(ProfileUpdateRequest $request, $id)
+    {
+        $user = Profile::findOrFail($id);
+        $user->update($request->validated());
+        return Inertia::render('Profile/Show', [
+            'profile' => $user,
+            'success' => 'Profile updated successfully.'
         ]);
     }
 
     /**
-     * Update the user's profile information.
+     * Remove the specified resource from storage.
      */
-    public function update(ProfileUpdateRequest $request): RedirectResponse
-    {
-        $request->user()->fill($request->validated());
+    public function destroy(Profile $profile, $id)
+    {$profile = Profile::find($id);
 
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
+        if ($profile) {
+            $profile->delete();
+            // Mengarahkan ke halaman dengan pesan sukses
+            return Inertia::render('Profile/Index', [
+                'success' => 'Data sudah dihapus.',
+                // Jika Anda ingin mengirimkan data lain ke halaman
+                'profiles' => Profile::all() // Menyediakan data terbaru
+            ]);
+        } else {
+            // Mengarahkan ke halaman dengan pesan error
+            return Inertia::render('Profile/Index', [
+                'error' => 'Data gagal dihapus.',
+                'profiles' => Profile::all() // Menyediakan data terbaru
+            ]);
+        }
+    }
+
+    public function trash() {
+        $profiles = Profile::onlyTrashed()->get();
+        return Inertia::render('Profile/Trash', [
+            'profiles' => $profiles,
+        ]);
+    }
+
+    public function restore($id)
+    {
+        // Mencari profil yang di-soft delete
+        $profile = Profile::onlyTrashed()->find($id);
+
+        if ($profile) {
+            $profile->restore(); // Mengembalikan data
+            // Mengarahkan ke halaman dengan pesan sukses
+            return Inertia::render('Profile/Index', [
+                'success' => 'Data sudah dikembalikan.',
+                // Jika Anda ingin mengirimkan data lain ke halaman
+                'profiles' => Profile::all() // Menyediakan data terbaru
+            ]);
+        } else {
+            // Mengarahkan ke halaman dengan pesan error
+            return Inertia::render('Profile/Index', [
+                'error' => 'Data tidak bisa dikembalikan.',
+                'profiles' => Profile::all() // Menyediakan data terbaru
+            ]);
+        }
+    }
+
+    public function permanentDelete($id) {
+        $profile = Profile::onlyTrashed()->find($id);
+
+        if ($profile) {
+            $profile->forceDelete(); // Menghapus data secara permanen
+            // Mengarahkan ke halaman dengan pesan sukses
+            return Inertia::render('Profile/Index', [
+                'success' => 'Data yang tersimpan dihapus permanen.',
+                // Menyediakan data terbaru jika diperlukan
+                'profiles' => Profile::all() // Menyediakan data terbaru jika diperlukan
+            ]);
+        } else {
+            // Mengarahkan ke halaman dengan pesan error
+            return Inertia::render('Profile/Index', [
+                'error' => 'Data gagal dihapus permanen.',
+                'profiles' => Profile::all() // Menyediakan data terbaru jika diperlukan
+            ]);
         }
 
-        $request->user()->save();
-
-        return Redirect::route('profile.edit');
     }
 
-    /**
-     * Delete the user's account.
-     */
-    public function destroy(Request $request): RedirectResponse
-    {
-        $request->validate([
-            'password' => ['required', 'current_password'],
-        ]);
 
-        $user = $request->user();
-
-        Auth::logout();
-
-        $user->delete();
-
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
-
-        return Redirect::to('/');
-    }
 }

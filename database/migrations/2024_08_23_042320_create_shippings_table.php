@@ -11,13 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('products', function (Blueprint $table) {
-            $table->id();
-            $table->bigInteger("category_id");
-            $table->string("product_name");
-            $table->integer("weight_product");
-            $table->integer("price");
-            $table->integer("stock");
+        Schema::create('shippings', function (Blueprint $table) {
+            $table->id(); // Primary key
+            $table->unsignedBigInteger('order_id');
+            $table->unsignedBigInteger('profile_id');
+            $table->string('shipping_method');
+            $table->string('tracking_number');
+            $table->date('shipping_date');
             $table->softDeletes();
             $table->timestamps();
         });
@@ -28,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('products');
+        Schema::dropIfExists('shippings');
     }
 };
