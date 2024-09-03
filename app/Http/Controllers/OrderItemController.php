@@ -101,4 +101,47 @@ class OrderItemController extends Controller
 
         return redirect()->route('order-items.index')->with('success', 'Order item deleted successfully');
     }
+
+    public function updateQuantity($order_id, $product_id, Request $request)
+    {
+        // Validasi input
+        $request->validate([
+            'quantity' => 'required|integer|min=1',
+        ]);
+
+        // Cari item order berdasarkan order_id dan product_id
+        $orderItem = OrderItem::where('order_id', $order_id)
+            ->where('product_id', $product_id)
+            ->first();
+
+        if (!$orderItem) {
+            return redirect()->back()->withErrors('Item not found.');
+        }
+
+        // Perbarui kuantitas item
+        $orderItem->quantity = $request->input('quantity');
+        $orderItem->save();
+
+        // Redirect dengan flash message untuk Inertia
+        return redirect()->back()->with('success', 'Quantity updated successfully.');
+    }
+
+    // Method untuk menghapus item dari order
+    public function deleteItem($order_id, $product_id)
+    {
+        $orderItem = OrderItem::where('order_id', $order_id)
+            ->where('product_id', $product_id)
+            ->first();
+
+        if (!$orderItem) {
+            return redirect()->back()->withErrors('Item not found.');
+        }
+
+        $orderItem->delete();
+
+        // Redirect dengan flash message untuk Inertia
+        return redirect()->back()->with('success', 'Item deleted successfully.');
+    }
 }
+
+
