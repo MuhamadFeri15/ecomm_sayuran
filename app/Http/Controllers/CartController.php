@@ -3,10 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\Cart;
+use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\DB;
+
 
 
 class CartController extends Controller
@@ -16,16 +18,14 @@ class CartController extends Controller
      */
     public function index()
     {
-        // Mendapatkan profil pengguna yang sedang login
-        $profile = Auth::user()->profile;
+        $carts = Auth::profile()->cart()->where('is_checked_out', false)->with('product')->get();
 
-        // Mengambil semua item keranjang untuk pengguna yang sedang login
-        $carts = Cart::where('profile_id', $profile->id)->with('product')->get();
-
-        return Inertia::render('Carts/Index', [
-            'carts' => $carts,
+        return Inertia::render('Cart/Index', [
+            'carts' => $carts
         ]);
     }
+
+
 
     /**
      * Show the form for creating a new resource.
@@ -40,22 +40,25 @@ class CartController extends Controller
      */
     public function store(Request $request)
     {
-        $profile = Auth::user()->profile;
-
         $request->validate([
-            'product_id' => 'required|exists:products,id',
+            'product_id' =>'required|exists:product,id',
             'quantity' => 'required|integer|min:1',
         ]);
 
-        Cart::create([
-            'profile_id' => $profile->id,
-            'product_id' => $request->product_id,
-            'quantity' => $request->quantity,
-            'is_checked_out' => false,
+        $product = Product::find($request->product_id);
+
+        $cart = Cart::firstOrCreate([
+            'profile_id' => Auth::id(),
+            'product_id' => $product->id,
         ]);
 
-        return redirect()->route('carts.index')->with('success', 'Product added to cart.');
-    }
+        $cart->quantity += $request->quantity;
+        $cart->total_price = $cart->price * $cart->quantity;
+        $cart->save();
+
+        return redirect()->back()->with('success', 'Product added to cart successfully!');
+
+}
 
     /**
      * Display the specified resource.
@@ -76,32 +79,32 @@ class CartController extends Controller
     /**
      * Update the specified resource in storage.
      */
-        public function update(Request $request, $id)
-        {
-            $request->validate([
-                'quantity' => 'required|integer|min:1',
-            ]);
+    public function update(Request $request, $id)
+    {
+        $request->validate([
+            'quantity' => 'required|integer|min:1',
+        ]);
 
-            $cart = Cart::findOrFail($id);
-            $cart->update([
-                'quantity' => $request->quantity,
-            ]);
+        $cart = Cart::findOrFail($id);
+        $cart->quantity = $request->quantity;
+        $cart->total_price = $cart->price * $request->quantity;
+        $cart->save();
 
-            return redirect()->route('carts.index')->with('success', 'Cart updated successfully.');
-        }
+        return redirect()->back()->with('success', 'Cart updated successfully!');
+    }
         /**
          * Remove the specified resource from storage.
          */
         public function destroy($id)
-    {
-        $cart = Cart::findOrFail($id);
-        $cart->delete();
+        {
+            $cart = Cart::findOrFail($id);
+            $cart->delete();
 
-        return redirect()->route('carts.index')->with('success', 'Item removed from cart.');
-    }
+            return redirect()->back()->with('success', 'Product removed from cart successfully!');
+        }
 
 
-    public function checkout()
+    public function checkout($id)
 {
     $profile = Auth::user()->profile;
 

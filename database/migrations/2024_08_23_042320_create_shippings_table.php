@@ -18,10 +18,10 @@ return new class extends Migration
             $table->string('shipping_method');
             $table->string('tracking_number');
             $table->date('shipping_date');
-            $table->softDeletes();
             $table->timestamps();
         });
     }
+
 
     /**
      * Reverse the migrations.

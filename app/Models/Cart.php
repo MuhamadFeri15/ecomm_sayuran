@@ -7,17 +7,20 @@ use Illuminate\Database\Eloquent\Model;
 
 class Cart extends Model
 {
+    protected $fillable = [
+        'profile_id',
+        'product_id',
+        'quantity',
+        'price',
+        'total_price',
+    ];
 
-    public function order(){
-        return $this->belongsTo(Order::class);
+    public function profile(){
+        return $this->belongsTo(Profile::class);
     }
 
-    public function product() {
+    public function product(){
         return $this->belongsTo(Product::class);
-    }
-
-    public function orderItem() {
-        return $this->hasMany(OrderItem::class);
     }
 
 }

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Shipping;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class ShippingController extends Controller
 {
@@ -12,7 +13,10 @@ class ShippingController extends Controller
      */
     public function index()
     {
-        //
+        $shipping = Shipping::all();
+        return Inertia::render('Shipping/Index', [
+            'shipping' => $shipping
+        ]);
     }
 
     /**
@@ -20,7 +24,7 @@ class ShippingController extends Controller
      */
     public function create()
     {
-        //
+        return Inertia::render('Shipping/Create');
     }
 
     /**
@@ -28,38 +32,65 @@ class ShippingController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $request->validate([
+            'order_id' => 'required|integer',
+            'profile_id' => 'required|integer',
+            'shipping_method' => 'required|string',
+            'tracking_number' => 'nullable|string',
+            'shipping_date' => 'required|date',
+        ]);
+
+        Shipping::create($request->all());
+        return redirect()->route('shippings.index');
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(Shipping $shipping)
+    public function show($id)
     {
-        //
+        $shipping = Shipping::findOrFail($id);
+        return Inertia::render('Shippings/Show', [
+            'shipping' => $shipping,
+        ]);
     }
 
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Shipping $shipping)
+    public function edit($id)
     {
-        //
+        $shipping = Shipping::findOrFail($id);
+        return Inertia::render('Shippings/Edit', [
+            'shipping' => $shipping,
+        ]);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Shipping $shipping)
+    public function update(Request $request, $id)
     {
-        //
+        $request->validate([
+            'order_id' => 'required|integer',
+            'profile_id' => 'required|integer',
+            'shipping_method' => 'required|string',
+            'tracking_number' => 'nullable|string',
+            'shipping_date' => 'required|date',
+        ]);
+
+        $shipping = Shipping::findOrFail($id);
+        $shipping->update($request->all());
+        return redirect()->route('shippings.index');
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Shipping $shipping)
+    public function destroy($id)
     {
-        //
+        $shipping = Shipping::findOrFail($id);
+        $shipping->delete();
+        return redirect()->route('shippings.index');
     }
 }

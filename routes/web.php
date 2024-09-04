@@ -11,6 +11,8 @@ use App\Http\Controllers\FavouriteController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductStockController;
 use App\Http\Controllers\OrderItemController;
+use App\Http\Controllers\ShippingController;
+use App\Http\Controllers\PaymentController;
 use Illuminate\Routing\RouteGroup;
 use Symfony\Component\Routing\Router;
 
@@ -22,13 +24,10 @@ Route::get('/dashboard', function () {
 Route::get('login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('login', [LoginController::class, 'login']);
 Route::post('logout', [LoginController::class, 'logout'])->name('logout');
-
 Route::get('register', [LoginController::class, 'showRegisterForm'])->name('register');
 Route::post('register', [LoginController::class,'register']);
-
 Route::get('forgot-password', [LoginController::class, 'showForgotPasswordForm'])->name('password.request');
 Route::post('forgot-password', [LoginController::class, 'sendResetLinkEmail'])->name('password.email');
-
 Route::get('reset-password/{token}', [LoginController::class,'showResetPasswordForm'])->name('password.reset');
 Route::post('reset-password', [LoginController::class, 'resetPassword'])->name('password.update');
 
@@ -55,16 +54,14 @@ Route::middleware('auth')->group(function () {
     Route::get('product/trash/restore/{id}', [ProductController::class, 'restore'])->name('product.restore');
     Route::get('/product/trash/permanent-delete/{id}', [ProductController::class, 'permanentDelete'])->name('product.permanentDelete');
     Route::get('/product/search', [ProductController::class, 'search'])->name('products.search');
-
 });
 
 Route::middleware(['auth'])->group(function () {
-    Route::get('/carts', [CartController::class, 'index'])->name('carts.index');
-    Route::post('/carts', [CartController::class, 'store'])->name('carts.store');
-    Route::patch('/carts/{id}', [CartController::class, 'update'])->name('carts.update');
-    Route::delete('/carts/{id}', [CartController::class, 'destroy'])->name('carts.destroy');
-    Route::get('/carts/{id}/checkout', [CartController::class, 'checkout'])->name('carts.checkout');
-
+    Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
+    Route::post('/cart', [CartController::class, 'store'])->name('cart.store');
+    Route::patch('/cart/{id}', [CartController::class, 'update'])->name('cart.update');
+    Route::delete('/cart/{id}', [CartController::class, 'destroy'])->name('cart.destroy');
+    Route::get('/cart/{id}/checkout', [CartController::class, 'checkout'])->name('cart.checkout');
 });
 
 Route::middleware(['auth'])->group(function () {
@@ -109,6 +106,25 @@ Route::middleware(['auth'])->group(function () {
 });
 
 Route::middleware(['auth'])->group(function () {
-   
+
+Route::get('/shippings', [ShippingController::class, 'index'])->name('shippings.index');
+Route::get('/shippings/create', [ShippingController::class, 'create'])->name('shippings.create');
+Route::post('/shippings', [ShippingController::class, 'store'])->name('shippings.store');
+Route::get('/shippings/{id}', [ShippingController::class, 'show'])->name('shippings.show');
+Route::get('/shippings/{id}/edit', [ShippingController::class, 'edit'])->name('shippings.edit');
+Route::put('/shippings/{id}', [ShippingController::class, 'update'])->name('shippings.update');
+Route::delete('/shippings/{id}', [ShippingController::class, 'destroy'])->name('shippings.destroy');
+
 });
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/payments', [PaymentController::class, 'index'])->name('payments.index');
+    Route::get('/payments/create', [PaymentController::class, 'create'])->name('payments.create');
+    Route::post('/payments', [PaymentController::class, 'store'])->name('payments.store');
+    Route::get('/payments/{id}', [PaymentController::class, 'show'])->name('payments.show');
+    Route::get('/payments/{id}/edit', [PaymentController::class, 'edit'])->name('payments.edit');
+    Route::put('/payments/{id}', [PaymentController::class, 'update'])->name('payments.update');
+    Route::delete('/payments/{id}', [PaymentController::class, 'destroy'])->name('payments.destroy');
+});
+
 

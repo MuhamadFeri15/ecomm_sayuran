@@ -1,45 +1,34 @@
 <?php
 
-namespace App\Models;
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
-
-class Cart extends Model
+return new class extends Migration
 {
-    use HasFactory, SoftDeletes;
-
-    protected $fillable = [
-        'profile_id',
-        'product_id',
-        'order_id',
-        'orderItem_id',
-        'is_checked_out',
-        'quantity',
-    ];
-
-    // Relasi ke model Profile
-    public function profile()
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
     {
-        return $this->belongsTo(Profile::class);
-    }
-
-    // Relasi ke model Product
-    public function product()
-    {
-        return $this->belongsTo(Product::class);
-    }
-
-    // Relasi ke model Order
-    public function order()
-    {
-        return $this->belongsTo(Order::class);
-    }
-
-    // Relasi ke model OrderItem
-    public function orderItem()
-    {
-        return $this->belongsTo(OrderItem::class, 'orderItem_id');
-    }
+        Schema::create('carts', function (Blueprint $table) {
+        $table->id();
+        $table->bigInteger('profile_id');
+        $table->bigInteger('product_id');
+        $table->integer('quantity');
+        $table->integer('price');
+        $table->integer('total_price');
+        $table->boolean('is_checked_out')->default(false);
+        $table->timestamps();
+    });
 }
+
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('carts');
+    }
+};

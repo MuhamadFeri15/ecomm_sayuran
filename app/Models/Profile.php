@@ -25,9 +25,21 @@ class Profile extends Model
     public function order() {
         return $this->hasMany(Order::class);
     }
-    
+
     public function favourite() {
         return $this->hasMany(Favourite::class);
+    }
+
+    public function shipping(){
+        return $this->hasOne(Shipping::class);
+    }
+
+    public function cart() {
+        return $this->hasMany(Cart::class);
+    }
+
+    public function payment() {
+        return $this->hasMany(Payment::class);
     }
 }
 
